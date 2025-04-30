@@ -1,19 +1,25 @@
-import { useState } from 'react';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import TeacherDashboard from './pages/Teacher';
-import StudentDashboard from './pages/Student';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import HomePage from "./pages/Homepage";
+import Layout from "./components/layout";
 
-export default function App() {
-  const [activeTab, setActiveTab] = useState('teacher');
 
+// Placeholder components for now — replace them with your actual components later
+const QuizzesPage = () => <h2>Quizzes Page</h2>;
+const CategoriesPage = () => <h2>Categories Page</h2>;
+
+const App = () => {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <Header activeTab={activeTab} setActiveTab={setActiveTab} />
-      <main className="flex-grow px-4 md:px-8 py-6">
-        {activeTab === 'teacher' ? <TeacherDashboard /> : <StudentDashboard />}
-      </main>
-      <Footer />
-    </div>
+    <Router>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/quizzes" element={<QuizzesPage />} />
+          <Route path="/categories" element={<CategoriesPage />} />
+        </Routes>
+      </Layout>
+    </Router>
   );
-}
+};
+
+export default App;
