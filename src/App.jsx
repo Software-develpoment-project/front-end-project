@@ -1,25 +1,63 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import HomePage from "./pages/Homepage";
-import Layout from "./components/layout";
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Box, CssBaseline, AppBar, Toolbar, Typography, Drawer, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import { Dashboard as DashboardIcon, Quiz, Category } from '@mui/icons-material';
+import Dashboard from './pages/Dashboard';
+import Quizzes from './pages/Quizzes';
+import QuizForm from './pages/QuizForm';
+import Questions from './pages/Questions';
+import Categories from './pages/Categories';
 
-
-// Placeholder components for now — replace them with your actual components later
-const QuizzesPage = () => <h2>Quizzes Page</h2>;
-const CategoriesPage = () => <h2>Categories Page</h2>;
-
-const App = () => {
+function Layout({ children }) {
   return (
-    <Router>
+    <Box sx={{ display: 'flex' }}>
+      <CssBaseline />
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+        <Toolbar>
+          <Typography variant="h6" noWrap component="div">
+            Teacher Dashboard
+          </Typography>
+        </Toolbar>
+      </AppBar>
+      <Drawer variant="permanent" sx={{ width: 240, flexShrink: 0 }}>
+        <Toolbar /> {/* Spacer for AppBar */}
+        <List>
+          <ListItem button component="a" href="/">
+            <ListItemIcon><DashboardIcon /></ListItemIcon>
+            <ListItemText primary="Dashboard" />
+          </ListItem>
+          <ListItem button component="a" href="/quizzes">
+            <ListItemIcon><Quiz /></ListItemIcon>
+            <ListItemText primary="Quizzes" />
+          </ListItem>
+          <ListItem button component="a" href="/categories">
+            <ListItemIcon><Category /></ListItemIcon>
+            <ListItemText primary="Categories" />
+          </ListItem>
+        </List>
+      </Drawer>
+      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+        <Toolbar /> {/* Spacer for AppBar */}
+        {children}
+      </Box>
+    </Box>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
       <Layout>
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/quizzes" element={<QuizzesPage />} />
-          <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/quizzes" element={<Quizzes />} />
+          <Route path="/quizzes/new" element={<QuizForm />} />
+          <Route path="/quizzes/:id/edit" element={<QuizForm editMode />} />
+          <Route path="/quizzes/:id/questions" element={<Questions />} />
+          <Route path="/categories" element={<Categories />} />
         </Routes>
       </Layout>
-    </Router>
+    </BrowserRouter>
   );
-};
+}
 
 export default App;
