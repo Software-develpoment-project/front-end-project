@@ -2,11 +2,11 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Box, CssBaseline, AppBar, Toolbar, Typography, Drawer, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import { Dashboard as DashboardIcon, Quiz, Category, Home as HomeIcon } from '@mui/icons-material';
 import Home from './Dashboard/Homepage';
-import Dashboard from './pages/Dashboard';
-import Quizzes from './pages/Quizzes';
-import QuizForm from './pages/QuizForm';
-import Questions from './pages/Questions';
-import Categories from './pages/Categories';
+import Dashboard from './Teacher/Dashboard';
+import Quizzes from './Teacher/Quizzes';
+import QuizForm from './Teacher/QuizForm';
+import Questions from './Teacher/Questions';
+import Categories from './Teacher/Categories';
 
 function TeacherLayout({ children }) {
   return (
