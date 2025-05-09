@@ -6,6 +6,9 @@ import Quizzes from './pages/Quizzes';
 import QuizForm from './pages/QuizForm';
 import Questions from './pages/Questions';
 import Categories from './pages/Categories';
+import AddTeacher from './login/teacherlogin';
+import TeacherForm from './login/teacherlogin';
+import QuizManagement from './pages/QuizForm';
 
 function Layout({ children }) {
   return (
@@ -33,6 +36,7 @@ function Layout({ children }) {
             <ListItemIcon><Category /></ListItemIcon>
             <ListItemText primary="Categories" />
           </ListItem>
+          
         </List>
       </Drawer>
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
@@ -49,11 +53,12 @@ function App() {
       <Layout>
         <Routes>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/quizzes" element={<Quizzes />} />
-          <Route path="/quizzes/new" element={<QuizForm />} />
+          <Route path="/quizzes" element={<QuizManagement />} />
+          <Route path="/quizzes/new" element={<QuizManagement />} />
           <Route path="/quizzes/:id/edit" element={<QuizForm editMode />} />
           <Route path="/quizzes/:id/questions" element={<Questions />} />
           <Route path="/categories" element={<Categories />} />
+          <Route path="/add-teacher" element={<TeacherForm />} />
         </Routes>
       </Layout>
     </BrowserRouter>
