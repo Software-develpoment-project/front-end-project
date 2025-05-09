@@ -129,17 +129,10 @@ const TeacherList = () => {
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <SchoolIcon sx={{ fontSize: 32, mr: 1, color: 'primary.main' }} />
           <Typography variant="h4" component="h1">
-            Teacher Management
+           Teacher Management
           </Typography>
         </Box>
-        <Button 
-          variant="contained" 
-          startIcon={<AddIcon />}
-          component={Link}
-          to="/teachers/new"
-        >
-          Add Teacher
-        </Button>
+        
       </Box>
 
       {error && (

@@ -33,6 +33,7 @@ import {
   LibraryBooks
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import React from "react";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -239,7 +240,7 @@ export default function Home() {
                     fontWeight: 600,
                     fontSize: "1rem"
                   }}
-                  onClick={() => navigate("/admin")}
+                  onClick={() => navigate("/Admin")}
                 >
                   Access Admin Panel
                 </Button>
@@ -311,7 +312,7 @@ export default function Home() {
                     bgcolor: "#ff7043",
                     "&:hover": { bgcolor: "#f4511e" }
                   }}
-                  onClick={() => navigate("/teacher")}
+                  onClick={() => navigate("/Teacher")}
                 >
                   Access Teacher Panel
                 </Button>
