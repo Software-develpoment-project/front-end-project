@@ -1,106 +1,163 @@
-import { Container, Typography, TextField, MenuItem, Checkbox, FormControlLabel, Button, Stack } from '@mui/material';
+import React, { useState } from 'react';
+import { 
+  Box, 
+  TextField, 
+  Button, 
+  Typography, 
+  FormControl, 
+  InputLabel, 
+  Select, 
+  MenuItem,
+  Checkbox,
+  FormControlLabel,
+  Alert,
+  CircularProgress
+} from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
-import { mockTeachers, mockQuizzes } from '../../mockData';
-import { useParams } from 'react-router-dom';
-import { useState } from 'react';
-
-export default function QuizForm({ editMode }) {
-  const { id } = useParams();
-  const quiz = editMode ? mockQuizzes.find(q => q.id === parseInt(id)) : null;
-  const [formData, setFormData] = useState({
-    title: quiz?.title || '',
-    description: quiz?.description || '',
-    courseCode: quiz?.courseCode || '',
-    difficulty: quiz?.difficulty || 'Normal',
-    topic: quiz?.topic || '',
-    teacherId: quiz?.teacherId || '',
-    published: quiz?.published || false
+const QuizForm = () => {
+  const [quiz, setQuiz] = useState({
+    title: '',
+    description: '',
+    published: true,
+    difficulty: 'EASY',
+    categoryIds: [],
+    questionIds: []
   });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setQuiz(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    const now = new Date().toISOString();
+
+    const payload = {
+      id: 0,
+      title: quiz.title,
+      description: quiz.description,
+      published: quiz.published,
+      difficulty: quiz.difficulty,
+      createdAt: now,
+      updatedAt: now,
+      categoryIds: quiz.categoryIds.length ? quiz.categoryIds : [0],
+      questionIds: quiz.questionIds.length ? quiz.questionIds : [0]
+    };
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/quizzes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create quiz');
+      }
+
+      setSuccess(true);
+      setTimeout(() => navigate('/teacher/quizzes'), 1500);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <Container>
+    <Box sx={{ maxWidth: 800, mx: 'auto', p: 3 }}>
       <Typography variant="h4" gutterBottom>
-        {editMode ? 'Edit Quiz' : 'Create New Quiz'}
+        Create New Quiz
       </Typography>
-      <Stack spacing={3}>
+
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {success && <Alert severity="success" sx={{ mb: 2 }}>Quiz created successfully!</Alert>}
+
+      <Box component="form" onSubmit={handleSubmit}>
         <TextField
+          fullWidth
+          label="Quiz Title"
           name="title"
-          label="Title"
-          value={formData.title}
+          value={quiz.title}
           onChange={handleChange}
-          fullWidth
+          required
+          margin="normal"
         />
+
         <TextField
-          name="description"
+          fullWidth
           label="Description"
+          name="description"
+          value={quiz.description}
+          onChange={handleChange}
           multiline
-          rows={4}
-          value={formData.description}
-          onChange={handleChange}
-          fullWidth
+          rows={3}
+          margin="normal"
         />
-        <TextField
-          name="courseCode"
-          label="Course Code"
-          value={formData.courseCode}
-          onChange={handleChange}
-          fullWidth
-        />
-        <TextField
-          select
-          name="difficulty"
-          label="Difficulty"
-          value={formData.difficulty}
-          onChange={handleChange}
-          fullWidth
-        >
-          {['Easy', 'Normal', 'Hard'].map((option) => (
-            <MenuItem key={option} value={option}>{option}</MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          name="topic"
-          label="Topic"
-          value={formData.topic}
-          onChange={handleChange}
-          fullWidth
-        />
-        <TextField
-          select
-          name="teacherId"
-          label="Teacher"
-          value={formData.teacherId}
-          onChange={handleChange}
-          fullWidth
-        >
-          {mockTeachers.map((teacher) => (
-            <MenuItem key={teacher.id} value={teacher.id}>
-              {teacher.name}
-            </MenuItem>
-          ))}
-        </TextField>
+
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Difficulty</InputLabel>
+          <Select
+            name="difficulty"
+            value={quiz.difficulty}
+            label="Difficulty"
+            onChange={handleChange}
+            required
+          >
+            <MenuItem value="EASY">Easy</MenuItem>
+            <MenuItem value="MEDIUM">Medium</MenuItem>
+            <MenuItem value="HARD">Hard</MenuItem>
+          </Select>
+        </FormControl>
+
         <FormControlLabel
           control={
-            <Checkbox 
+            <Checkbox
               name="published"
-              checked={formData.published}
+              checked={quiz.published}
               onChange={handleChange}
             />
           }
-          label="Published"
+          label="Publish immediately"
+          sx={{ mt: 1 }}
         />
-        <Button variant="contained" size="large">
-          {editMode ? 'Update Quiz' : 'Create Quiz'}
-        </Button>
-      </Stack>
-    </Container>
+
+        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={() => navigate('/teacher/quizzes')}
+            disabled={loading}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={loading}
+            startIcon={loading ? <CircularProgress size={20} /> : null}
+          >
+            {loading ? 'Saving...' : 'Save Quiz'}
+          </Button>
+        </Box>
+      </Box>
+    </Box>
   );
-}
+};
+
+export default QuizForm;

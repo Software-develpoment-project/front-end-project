@@ -6,7 +6,11 @@ import Dashboard from './Teacher/Dashboard';
 import Quizzes from './Teacher/Quizzes';
 import QuizForm from './Teacher/QuizForm';
 import Questions from './Teacher/Questions';
-import Categories from './Teacher/Categories';
+import Teacherform from './Teacher/TeacherForm';
+
+
+
+
 
 function TeacherLayout({ children }) {
   return (
@@ -34,9 +38,13 @@ function TeacherLayout({ children }) {
             <ListItemIcon><Quiz /></ListItemIcon>
             <ListItemText primary="Quizzes" />
           </ListItem>
-          <ListItem button component="a" href="/teacher/categories">
+          <ListItem button component="a" href="/Teacher/TeacherForm">
             <ListItemIcon><Category /></ListItemIcon>
-            <ListItemText primary="Categories" />
+            <ListItemText primary="Add Teacher" />
+          </ListItem>
+          <ListItem button component="a" href="/Teacher/QuizForm">
+            <ListItemIcon><Category /></ListItemIcon>
+            <ListItemText primary="Add Quiz" />
           </ListItem>
         </List>
       </Drawer>
@@ -81,11 +89,19 @@ function App() {
             <Questions />
           </TeacherLayout>
         } />
-        <Route path="/teacher/categories" element={
+        <Route path="/teacher/TeacherForm" element={
           <TeacherLayout>
-            <Categories />
+            <Teacherform />
           </TeacherLayout>
         } />
+        <Route path="/teacher/QuizForm" element={
+          <TeacherLayout>
+            <QuizForm/>
+          </TeacherLayout>
+        } />
+
+
+       
       </Routes>
     </BrowserRouter>
   );
