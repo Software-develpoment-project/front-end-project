@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Box, 
   TextField, 
@@ -28,8 +28,13 @@ const QuizForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [message, setMessage] = useState('');
   const navigate = useNavigate();
-
+  function handleQuizChange(e) {
+    const { name, value } = e.target;
+    setQuiz(prev => ({ ...prev, [name]: value }));
+  }
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setQuiz(prev => ({
@@ -37,6 +42,19 @@ const QuizForm = () => {
       [name]: type === 'checkbox' ? checked : value
     }));
   };
+
+  useEffect(() => {
+      async function fetchCategories() {
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/categories`);
+          const data = await response.json();
+          setCategories(data);
+        } catch (error) {
+          setMessage('Error fetching categories');
+        } . 
+      }
+      fetchCategories();
+    }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -136,6 +154,21 @@ const QuizForm = () => {
           label="Publish immediately"
           sx={{ mt: 1 }}
         />
+        <FormControl fullWidth required>
+            <InputLabel>Category</InputLabel>
+            <Select
+              name="category"
+              value={quiz.category}
+              label="Category"
+              onChange={handleQuizChange}
+            >
+              {categories.map(cat => (
+                <MenuItem key={cat.id || cat._id || cat} value={cat.title || cat}>
+                  {cat.title || cat}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
         <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
           <Button

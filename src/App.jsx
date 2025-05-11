@@ -7,7 +7,7 @@ import QuizForm from './Teacher/QuizForm';
 import Questions from './Teacher/Questions';
 import TeacherList from './Admin/Dashboard';
 import TeacherForm from './Admin/TeacherForm';
-import Login from './Dashboard/Login';
+import Categories from './Teacher/Categories';
 
 // Admin Layout Component
 function AdminLayout({ children }) {
@@ -73,6 +73,12 @@ function TeacherLayout({ children }) {
             <ListItemIcon><AddCircle /></ListItemIcon>
             <ListItemText primary="Create Quiz" />
           </ListItem>
+          <ListItem button component={Link} to="/teacher/category">
+            <ListItemIcon><AddCircle /></ListItemIcon>
+            <ListItemText primary="Create Category" />
+          </ListItem>
+
+          
         </List>
       </Drawer>
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
@@ -96,11 +102,7 @@ function App() {
             <TeacherList />
           </AdminLayout>
         } />
-        <Route path="/login" element={
-         
-            <Login />
-          
-        } />
+        
         <Route path="/admin/dashboard" element={
           <AdminLayout>
             <TeacherList />
@@ -128,9 +130,15 @@ function App() {
             <Quizzes />
           </TeacherLayout>
         } />
+        
         <Route path="/teacher/quizzes" element={
           <TeacherLayout>
             <Quizzes />
+          </TeacherLayout>
+        } />
+        <Route path="/teacher/category" element={
+          <TeacherLayout>
+            <Categories />
           </TeacherLayout>
         } />
         <Route path="/teacher/quizzes/new" element={
