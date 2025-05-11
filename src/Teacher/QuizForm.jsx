@@ -51,7 +51,7 @@ const QuizForm = () => {
           setCategories(data);
         } catch (error) {
           setMessage('Error fetching categories');
-        } . 
+        } 
       }
       fetchCategories();
     }, []);
