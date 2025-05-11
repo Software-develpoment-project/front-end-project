@@ -197,10 +197,18 @@ export default function Quizzes() {
                       <Button 
                         startIcon={<Delete />}
                         color="error"
+                        
+                        size="small"
+                      >
+                        Add Questions 
+                      </Button>
+                      <Button 
+                        startIcon={<Delete />}
+                        color="error"
                         onClick={() => handleDelete(quiz.id)}
                         size="small"
                       >
-                        Delete
+                        DELETE
                       </Button>
                     </ButtonGroup>
                   </Box>

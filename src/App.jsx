@@ -7,6 +7,7 @@ import QuizForm from './Teacher/QuizForm';
 import Questions from './Teacher/Questions';
 import TeacherList from './Admin/Dashboard';
 import TeacherForm from './Admin/TeacherForm';
+import Login from './Dashboard/Login';
 
 // Admin Layout Component
 function AdminLayout({ children }) {
@@ -94,6 +95,11 @@ function App() {
           <AdminLayout>
             <TeacherList />
           </AdminLayout>
+        } />
+        <Route path="/login" element={
+         
+            <Login />
+          
         } />
         <Route path="/admin/dashboard" element={
           <AdminLayout>
