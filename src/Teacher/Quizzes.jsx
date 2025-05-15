@@ -29,15 +29,20 @@ import {
   Category,
   HelpOutline
 } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
+import { useDispatch } from 'react-redux';
+import { setQuiz } from '../redux/features/counterSlice';
 
 export default function Quizzes() {
+  const navigate = useNavigate();
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedQuiz, setSelectedQuiz] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const dispatch = useDispatch();
+  
 
   const fetchQuizzes = async () => {
     try {
@@ -47,6 +52,7 @@ export default function Quizzes() {
         throw new Error('Failed to fetch quizzes');
       }
       const data = await response.json();
+      console.log(data) ;
       setQuizzes(data);
     } catch (err) {
       setError(err.message);
@@ -67,6 +73,7 @@ export default function Quizzes() {
       if (!response.ok) {
         throw new Error('Failed to delete quiz');
       }
+      
       fetchQuizzes(); // Refresh the list
     } catch (err) {
       setError(err.message);
@@ -78,8 +85,37 @@ export default function Quizzes() {
     setOpenDialog(true);
   };
 
-  const formatDate = (dateString) => {
-    return format(new Date(dateString), 'PPpp');
+  const handleEditQuiz = (quiz) => {
+    try {
+      if (!quiz || !quiz.id) {
+        throw new Error('Invalid quiz data');
+      }
+      
+      // Dispatch quiz data to redux store
+      dispatch(setQuiz(quiz));
+      
+      // Navigate to edit page
+      navigate(`/teacher/quizzes/${quiz.id}/edit`);
+    } catch (error) {
+      console.error('Error handling quiz edit:', error);
+      // Add error handling UI feedback here if needed
+    }
+  };
+
+  const formatDate = (dateString) => {  
+    const date = new Date(dateString); // Will ignore microseconds after milliseconds
+
+    const formatted = date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+    });
+
+    return formatted ;
   };
 
   if (loading) {
@@ -187,21 +223,24 @@ export default function Quizzes() {
                         View
                       </Button>
                       <Button 
-                        component={Link}
-                        to={`/quizzes/${quiz.id}/edit`}
+                        
+                       onClick={() => handleEditQuiz(quiz)}
+                       
                         startIcon={<Edit />}
                         size="small"
                       >
                         Edit
                       </Button>
-                      <Button 
+                      <Link
                         startIcon={<Delete />}
                         color="error"
-                        
+                        to={`/teacher/quizzes/${quiz.id}/questions`}
                         size="small"
                       >
+                        <Button>
                         Add Questions 
-                      </Button>
+                        </Button>
+                      </Link>
                       <Button 
                         startIcon={<Delete />}
                         color="error"

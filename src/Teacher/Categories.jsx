@@ -5,6 +5,8 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem, FormControl, InputLabel
 } from '@mui/material';
 import { Add, Delete, Edit, Refresh } from '@mui/icons-material';
+import { useDispatch } from 'react-redux';
+import { setCategoriesList } from '../redux/features/counterSlice';
 
 export default function Categories() {
   // State variables
@@ -32,6 +34,7 @@ export default function Categories() {
   const [quizDialogOpen, setQuizDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [teacherId, setTeacherId] = useState(1); // Default teacher ID - replace with actual auth
+  const dispatch = useDispatch()
 
   // API base URL
   const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/categories`;
@@ -49,11 +52,13 @@ export default function Categories() {
       if (!response.ok) throw new Error('Failed to fetch categories');
       const data = await response.json();
       setCategories(data);
+      dispatch(setCategoriesList(data))
     } catch (error) {
       showSnackbar(`Error: ${error.message}`, 'error');
     } finally {
       setLoading(false);
     }
+    
   };
 
   // Fetch categories by teacher
@@ -91,9 +96,11 @@ export default function Categories() {
       if (!response.ok) throw new Error('Failed to create category');
       
       const createdCategory = await response.json();
+      dispatch(setCategoriesList([...categories, createdCategory]))
       setCategories([...categories, createdCategory]);
       setNewCategory({ title: '', description: '' });
       showSnackbar('Category created successfully', 'success');
+      
     } catch (error) {
       showSnackbar(`Error: ${error.message}`, 'error');
     } finally {
@@ -155,6 +162,7 @@ export default function Categories() {
       ));
       setDialogOpen(false);
       showSnackbar('Category updated successfully', 'success');
+      
     } catch (error) {
       showSnackbar(`Error: ${error.message}`, 'error');
     } finally {
