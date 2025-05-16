@@ -121,7 +121,7 @@ export default function Solutions() {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/quizzes/questions/answers/${editSolution.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/quizzes/answers/${editSolution.id}`, { 
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -161,7 +161,7 @@ export default function Solutions() {
     }
     
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/quizzes/questions/answers/${solutionToDelete.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/quizzes/answers/${solutionToDelete.id}`, {
         method: 'DELETE',
       });
 
