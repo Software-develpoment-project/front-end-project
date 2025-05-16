@@ -195,9 +195,10 @@ export default function Quizzes() {
                         Edit
                       </Button>
                       <Button 
-                        startIcon={<Delete />}
-                        color="error"
-                        
+                        component={Link}
+                        startIcon={<Add />}
+                        color="primary"
+                        to={`/teacher/quizzes/${quiz.id}/questions`}
                         size="small"
                       >
                         Add Questions 

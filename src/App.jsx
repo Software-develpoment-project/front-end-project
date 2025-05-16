@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { Box, CssBaseline, AppBar, Toolbar, Typography, Drawer, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
-import { Dashboard as DashboardIcon, Quiz, People, School, Home as HomeIcon, ListAlt, AddCircle } from '@mui/icons-material';
+import { Dashboard as DashboardIcon, Quiz, People, School, Home as HomeIcon, ListAlt, AddCircle, Add } from '@mui/icons-material';
 import Home from './Dashboard/Homepage';
 import Quizzes from './Teacher/Quizzes';
 import QuizForm from './Teacher/QuizForm';
@@ -8,6 +8,8 @@ import Questions from './Teacher/Questions';
 import TeacherList from './Admin/Dashboard';
 import TeacherForm from './Admin/TeacherForm';
 import Categories from './Teacher/Categories';
+import AddQuestion from './Teacher/AddQuestions';
+import QuestionForm from './Teacher/QuizForm';
 
 // Admin Layout Component
 function AdminLayout({ children }) {
@@ -153,7 +155,7 @@ function App() {
         } />
         <Route path="/teacher/quizzes/:id/questions" element={
           <TeacherLayout>
-            <Questions />
+            <AddQuestion />
           </TeacherLayout>
         } />
 
