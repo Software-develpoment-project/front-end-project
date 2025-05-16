@@ -1,203 +1,399 @@
-import { useState } from 'react';
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Divider,
-  Chip,
-  IconButton,
-  Grid
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { 
+  Container, Typography, Button, Table, TableBody, TableCell, 
+  TableContainer, TableHead, TableRow, Paper, Chip, IconButton, 
+  TextField, MenuItem, Stack, Dialog, DialogActions, DialogContent, 
+  DialogContentText, DialogTitle, Snackbar, Alert, Box, CircularProgress
 } from '@mui/material';
-import { Add, Delete, Close } from '@mui/icons-material';
+import { Add, Delete, Edit, Check, Close } from '@mui/icons-material';
 
-export default function QuestionForm({ onSubmit, onCancel }) {
-  const [questionText, setQuestionText] = useState('');
-  const [questionType, setQuestionType] = useState('multiple-choice');
-  const [answers, setAnswers] = useState([
-    { text: '', isCorrect: false },
-    { text: '', isCorrect: false },
-  ]);
-  const [error, setError] = useState('');
+export default function Questions() {
+  const { id: quizId } = useParams();
+  const navigate = useNavigate();
+  
+  // State management
+  
+  const [questions, setQuestions] = useState([]);
+  const [answers, setAnswers] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
+  
+  const [newQuestion, setNewQuestion] = useState({
+    text: '',
+    difficultyLevel: 'MEDIUM',
+    quizId: parseInt(quizId)
+  });
+  
+  const [editQuestion, setEditQuestion] = useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [questionToDelete, setQuestionToDelete] = useState(null);
 
-  const handleAnswerChange = (index, field, value) => {
-    const newAnswers = [...answers];
-    if (field === 'isCorrect') {
-      // For multiple-choice, only one correct answer
-      if (questionType === 'multiple-choice') {
-        newAnswers.forEach((ans, i) => {
-          newAnswers[i].isCorrect = i === index;
-        });
-      } else {
-        newAnswers[index][field] = value;
+  // Fetch questions and answer counts when component mounts
+  useEffect(() => {
+    fetchQuestions(); 
+  }, [quizId]);
+
+  const fetchQuestions = async () => {
+    setLoading(true);
+    try {
+      // Fetch questions for this quiz
+      const questionsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/quizzes/${quizId}/questions`);
+      if (!questionsResponse.ok) {
+        throw new Error('Failed to fetch questions');
       }
-    } else {
-      newAnswers[index][field] = value;
+      
+      const questionsData = await questionsResponse.json();
+      setQuestions(questionsData);
+      
+      // Fetch answer counts for each question
+      if (questionsData.length > 0) {
+        const answerCounts = await Promise.all(
+          questionsData.map(async (question) => {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/quizzes/questions/${question.id}/answers`);
+            if (!response.ok) {
+              throw new Error('Failed to fetch answer counts');
+            }
+            const data = await response.json();
+            return { id: question.id, count: data.length };
+          })
+        );
+        
+        const answerMap = {};
+        answerCounts.forEach(item => {
+          answerMap[item.id] = item.count;
+        });
+        setAnswers(answerMap);
+      }
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-    setAnswers(newAnswers);
   };
 
-  const addAnswer = () => {
-    if (answers.length < 6) {
-      setAnswers([...answers, { text: '', isCorrect: false }]);
+  const handleAddQuestion = async () => {
+    if (!newQuestion.text.trim()) {
+      setSnackbar({
+        open: true,
+        message: 'Question text cannot be empty',
+        severity: 'error'
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/quizzes/${quizId}/questions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newQuestion),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add question');
+      }
+
+      const addedQuestion = await response.json();
+      setQuestions([...questions, addedQuestion]);
+      setAnswers({...answers, [addedQuestion.id]: 0});
+      setNewQuestion({
+        text: '',
+        difficultyLevel: 'MEDIUM',
+        quizId: parseInt(quizId)
+      });
+      setSnackbar({
+        open: true,
+        message: 'Question added successfully',
+        severity: 'success'
+      });
+    } catch (err) {
+      console.error('Error adding question:', err);
+      setSnackbar({
+        open: true,
+        message: err.message,
+        severity: 'error'
+      });
     }
   };
 
-  const removeAnswer = (index) => {
-    if (answers.length > 2) {
-      const newAnswers = [...answers];
-      newAnswers.splice(index, 1);
+  const handleUpdateQuestion = async () => {
+    if (!editQuestion?.text?.trim()) {
+      setSnackbar({
+        open: true,
+        message: 'Question text cannot be empty',
+        severity: 'error'
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/quizzes/questions/${editQuestion.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...editQuestion,
+          quizId: parseInt(quizId)
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update question');
+      }
+
+      const updatedQuestion = await response.json();
+      setQuestions(questions.map(q => 
+        q.id === updatedQuestion.id ? updatedQuestion : q
+      ));
+      setEditQuestion(null);
+      setSnackbar({
+        open: true,
+        message: 'Question updated successfully',
+        severity: 'success'
+      });
+    } catch (err) {
+      console.error('Error updating question:', err);
+      setSnackbar({
+        open: true,
+        message: err.message,
+        severity: 'error'
+      });
+    }
+  };
+
+  const confirmDeleteQuestion = (question) => {
+    setQuestionToDelete(question);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteQuestion = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/quizzes/questions/${questionToDelete.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete question');
+      }
+
+      setQuestions(questions.filter(q => q.id !== questionToDelete.id));
+      const newAnswers = {...answers};
+      delete newAnswers[questionToDelete.id];
       setAnswers(newAnswers);
+      setDeleteDialogOpen(false);
+      setQuestionToDelete(null);
+      setSnackbar({
+        open: true,
+        message: 'Question deleted successfully',
+        severity: 'success'
+      });
+    } catch (err) {
+      console.error('Error deleting question:', err);
+      setSnackbar({
+        open: true,
+        message: err.message,
+        severity: 'error'
+      });
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    // Validation
-    if (!questionText.trim()) {
-      setError('Question text is required');
-      return;
-    }
-    
-    if (answers.some(answer => !answer.text.trim())) {
-      setError('All answers must have text');
-      return;
-    }
-    
-    if (!answers.some(answer => answer.isCorrect)) {
-      setError('At least one correct answer is required');
-      return;
-    }
-    
-    setError('');
-    
-    // Prepare data for submission
-    const questionData = {
-      text: questionText,
-      type: questionType,
-      answers: answers.map(answer => ({
-        text: answer.text,
-        isCorrect: answer.isCorrect
-      }))
-    };
-    
-    onSubmit(questionData);
+  const handleViewAnswers = (questionId) => {
+    navigate(`/quizzes/${quizId}/questions/${questionId}/answers`);
   };
+
+  if (loading) {
+    return (
+      <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container>
+        <Alert severity="error" sx={{ mt: 2 }}>
+          Error loading questions: {error}
+        </Alert>
+      </Container>
+    );
+  }
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-      <Typography variant="h6" gutterBottom>
-        Add New Question
-      </Typography>
-      
-      <TextField
-        label="Question Text"
-        value={questionText}
-        onChange={(e) => setQuestionText(e.target.value)}
-        fullWidth
-        multiline
-        rows={3}
-        sx={{ mb: 3 }}
-        required
-      />
-      
-      <FormControl fullWidth sx={{ mb: 3 }}>
-        <InputLabel>Question Type</InputLabel>
-        <Select
-          value={questionType}
-          label="Question Type"
-          onChange={(e) => setQuestionType(e.target.value)}
+    <Container>
+      <Typography variant="h4" gutterBottom>
+        Quiz Questions
+        <Button 
+          variant="contained" 
+          startIcon={<Add />}
+          sx={{ float: 'right' }}
+          onClick={() => document.getElementById('new-question-form').scrollIntoView({ behavior: 'smooth' })}
         >
-          <MenuItem value="multiple-choice">Multiple Choice (Single Answer)</MenuItem>
-          <MenuItem value="multiple-answer">Multiple Answer</MenuItem>
-          <MenuItem value="true-false">True/False</MenuItem>
-        </Select>
-      </FormControl>
-      
-      <Divider sx={{ my: 3 }} />
-      
-      <Typography variant="h6" gutterBottom>
-        Answer Options
+          New Question
+        </Button>
       </Typography>
-      
-      {answers.map((answer, index) => (
-        <Grid container spacing={2} alignItems="center" key={index} sx={{ mb: 2 }}>
-          <Grid item xs={1}>
-            <Chip 
-              label={`${index + 1}`} 
-              color={answer.isCorrect ? 'success' : 'default'} 
-              variant={answer.isCorrect ? 'filled' : 'outlined'}
-            />
-          </Grid>
-          <Grid item xs={9}>
-            <TextField
-              value={answer.text}
-              onChange={(e) => handleAnswerChange(index, 'text', e.target.value)}
-              fullWidth
-              label={`Answer ${index + 1}`}
-              required
-            />
-          </Grid>
-          <Grid item xs={2}>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <Button
-                size="small"
-                color={answer.isCorrect ? 'success' : 'primary'}
-                variant={answer.isCorrect ? 'contained' : 'outlined'}
-                onClick={() => handleAnswerChange(index, 'isCorrect', !answer.isCorrect)}
-                sx={{ mr: 1 }}
-              >
-                Correct
-              </Button>
-              <IconButton 
-                onClick={() => removeAnswer(index)}
-                color="error"
-                disabled={answers.length <= 2}
-              >
-                <Delete />
-              </IconButton>
-            </Box>
-          </Grid>
-        </Grid>
-      ))}
-      
-      <Button
-        startIcon={<Add />}
-        onClick={addAnswer}
-        disabled={answers.length >= 6}
-        sx={{ mb: 3 }}
-      >
-        Add Answer
-      </Button>
-      
-      {error && (
-        <Typography color="error" sx={{ mb: 2 }}>
-          {error}
-        </Typography>
+
+      { questions &&  questions.length > 0 ? (
+        <TableContainer component={Paper} sx={{ mb: 4 }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Question</TableCell>
+                <TableCell>difficultyLevel</TableCell>
+                <TableCell>Answers</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              { questions && questions.map((question) => (
+                <TableRow key={question.id}>
+                  <TableCell>{question.text}</TableCell>
+                  <TableCell>
+                    <Chip 
+                      label={question.difficultyLevel} 
+                      color={
+                        question.difficultyLevel === 'EASY' ? 'success' : 
+                        question.difficultyLevel === 'HARD' ? 'error' : 'primary'
+                      } 
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Button size="small" onClick={() => handleViewAnswers(question.id)}>
+                      {answers[question.id] || 0} Answers
+                    </Button>
+                  </TableCell>
+                  <TableCell>
+                    <IconButton onClick={() => setEditQuestion(question)}>
+                      <Edit />
+                    </IconButton>
+                    <IconButton color="error" onClick={() => confirmDeleteQuestion(question)}>
+                      <Delete />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      ) : (
+        <Box sx={{ my: 4, textAlign: 'center' }}>
+          <Typography variant="h6" color="textSecondary">
+            No questions found for this quiz
+          </Typography>
+        </Box>
       )}
-      
-      <Divider sx={{ my: 3 }} />
-      
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-        <Button
-          variant="outlined"
-          startIcon={<Close />}
-          onClick={onCancel}
+
+      <div id="new-question-form">
+        <Typography variant="h5" gutterBottom>
+          Add New Question
+        </Typography>
+        <Stack spacing={3}>
+          <TextField
+            label="Question text"
+            multiline
+            rows={4}
+            fullWidth
+            value={newQuestion.text}
+            onChange={(e) => setNewQuestion({...newQuestion, text: e.target.value})}
+          />
+          <TextField
+            select
+            label="Difficulty"
+            value={newQuestion.difficultyLevel}
+            onChange={(e) => setNewQuestion({...newQuestion, difficultyLevel: e.target.value})}
+            fullWidth
+          >
+            {['EASY', 'MEDIUM', 'HARD'].map((option) => (
+              <MenuItem key={option} value={option}>{option}</MenuItem>
+            ))}
+          </TextField>
+          <Button 
+            variant="contained" 
+            size="large" 
+            onClick={handleAddQuestion}
+            startIcon={<Add />}
+          >
+            Add Question
+          </Button>
+        </Stack>
+      </div>
+
+      {/* Edit Question Dialog */}
+      <Dialog open={editQuestion !== null} onClose={() => setEditQuestion(null)} maxWidth="md" fullWidth>
+        <DialogTitle>Edit Question</DialogTitle>
+        <DialogContent>
+          <Stack spacing={3} sx={{ mt: 1 }}>
+            <TextField
+              label="Question text"
+              multiline
+              rows={4}
+              fullWidth
+              value={editQuestion?.text || ''}
+              onChange={(e) => setEditQuestion({...editQuestion, text: e.target.value})}
+            />
+            <TextField
+              select
+              label="Difficulty"
+              value={editQuestion?.difficultyLevel || 'MEDIUM'}
+              onChange={(e) => setEditQuestion({...editQuestion, difficultyLevel: e.target.value})}
+              fullWidth
+            >
+              {['EASY', 'MEDIUM', 'HARD'].map((option) => (
+                <MenuItem key={option} value={option}>{option}</MenuItem>
+              ))}
+            </TextField>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditQuestion(null)} startIcon={<Close />}>Cancel</Button>
+          <Button onClick={handleUpdateQuestion} variant="contained" startIcon={<Check />}>Save</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this question? This action cannot be undone and will also remove all associated answers.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)} startIcon={<Close />}>Cancel</Button>
+          <Button onClick={handleDeleteQuestion} color="error" variant="contained" startIcon={<Delete />}>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({...snackbar, open: false})}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setSnackbar({...snackbar, open: false})}
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
         >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          type="submit"
-        >
-          Save Question
-        </Button>
-      </Box>
-    </Box>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </Container>
   );
 }

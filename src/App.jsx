@@ -8,8 +8,9 @@ import Questions from './Teacher/Questions';
 import TeacherList from './Admin/Dashboard';
 import TeacherForm from './Admin/TeacherForm';
 import Categories from './Teacher/Categories';
-import AddQuestion from './Teacher/AddQuestions';
-import QuestionForm from './Teacher/QuizForm';
+import StudentQuizzes from './Student/StudentQuizzes';
+import QuizTaking from './Student/QuizTaking';
+import Solutions from './Teacher/Solutions';
 
 // Admin Layout Component
 function AdminLayout({ children }) {
@@ -158,9 +159,21 @@ function App() {
             <AddQuestion />
           </TeacherLayout>
         } />
+        <Route path="/quizzes/:quizId/questions/:questionId/answers" element={
+          <TeacherLayout>
+            <Solutions/>
+          </TeacherLayout>
+        } />
 
         {/* Student route */}
-        <Route path="/student-dashboard" element={<div>Student Dashboard</div>} />
+        <Route path="/student-dashboard" element={<StudentQuizzes />} />
+        <Route path="/student/quizzes" element={
+            <StudentQuizzes />
+        } />
+        <Route path="/student/quiz/quiztaking" element={<QuizTaking/> } />
+        <Route path="/student/quiz/quizresults" element={<QuizResults />} />
+
+        
       </Routes>
     </BrowserRouter>
   );
