@@ -167,7 +167,7 @@ function App() {
         } />
 
         {/* Student route */}
-        <Route path="/student-dashboard" element={<div>Student Dashboard</div>} />
+        <Route path="/student-dashboard" element={<StudentQuizzes />} />
         <Route path="/student/quizzes" element={
             <StudentQuizzes />
         } />
