@@ -11,6 +11,7 @@ import Categories from './Teacher/Categories';
 import StudentQuizzes from './Student/StudentQuizzes';
 import QuizTaking from './Student/QuizTaking';
 import Solutions from './Teacher/Solutions';
+import AddQuestion from './Teacher/AddQuestions';
 
 // Admin Layout Component
 function AdminLayout({ children }) {
