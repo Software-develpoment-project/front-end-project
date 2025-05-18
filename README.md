@@ -63,7 +63,7 @@ Version control milestone:
 ## 📦 How to Run
 
 1. Clone the repository  
-   `git clone https://github.com/your-username/quiz-frontend.git`
+   `(https://github.com/Software-develpoment-project/front-end-project.git)`
 
 2. Install dependencies  
    `npm install`
