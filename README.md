@@ -38,22 +38,7 @@ This project is part of a Haaga-Helia assignment to build an interactive quiz ap
 
 ---
 
-## 🗂️ Project Structure
 
-/src
-/components → Reusable React components
-/pages → Student and Teacher dashboard pages
-/redux → Redux slices and store setup
-/services → API interaction files
-/assets → Images, icons, and static files
-App.jsx → Main application structure
-main.jsx → Entry point
-
-yaml
-Copy
-Edit
-
----
 
 ## 📅 Redmine Project Management (internal)
 
